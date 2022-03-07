@@ -1,15 +1,47 @@
-const express=require('express')
+const express = require('express')
+const app = express()
 
-const app=express()
+app.use(logger)
 
-
-app.get("/libraries",checkpermisson,(req,res)=>{
-    res.send({route:"/libraries"},permission:true)
-})
-app.get("/authors",checkpermisson,(req,res)=>{
-    res.send({route:"/authors"},permission:true)
+app.get("/books", (req, res, next) => {
+    res.send(JSON.stringify({ route: req.path }))
 })
 
-app.listen("5000",()=>{
-    console.log("Hello")
+
+
+// it is for middleware librarian
+app.get("/libraries", checkPermission("librarian"), (req, res, next) => {
+    res.send(JSON.stringify({ route: req.path, permission: req.permission }))
+})
+
+// it is the middleware for authors
+app.get("/authors", checkPermission("author"), (req, res, next) => {
+    res.send(JSON.stringify({ route: req.path, permission: req.permission }))
+})
+
+
+function checkPermission(result) {
+    return function (req, res, next) {
+        if (result == "librarian") {
+            req.path = req.path;
+            req.permission = true
+            next()
+        }
+        if (result == "author") {
+            req.path = req.path;
+            req.permission = true
+            next()
+        }
+
+    }
+}
+
+
+
+function logger(req, res, next) {
+    req.path = req.path
+    next()
+}
+app.listen("5901", () => {
+    console.log("This is the port number 5901")
 })
